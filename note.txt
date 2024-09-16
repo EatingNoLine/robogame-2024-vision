@@ -1,0 +1,23 @@
+OpenCV中文文档	https://apachecn.github.io/opencv-doc-zh/#/
+
+serial format:
+first 0:stay 1:move(slow+) 2:move(slow) 3:move(medium) 4:move(fast) 5:move(fast+) 6:grab 7:rotate 8:shoot
+if move:
+    f:foward b:backward l:left r:right
+    later comes "...." e.g. 0012 (mm)
+elif grab:
+	l:left r:right
+	later 0000
+else:
+    00000
+    
+场地 3m*4m
+Atag 400*400 间距240 与墙体边缘水平距离200,垂直距离100
+
+查看摄像头信息
+v4l2-ctl --list-devices
+
+设置serial别名
+KERNEL =="ttyUSB[0-9]*",ATTRS{idVendor}== "1a86",ATTRS{idProduct}=="7523",MODE="0777",SYMLINK+= "my_serial0"
+
+摄像头 1552 * 1105 (mm)
