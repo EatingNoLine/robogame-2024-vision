@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import recognition
 import realworld_L
@@ -20,16 +22,27 @@ VIDEO_FRONT_BGR2RGB = True
 D_HEIGHT = 1080
 D_WIDTH = 1920
 
+MOVE_DELAY = 1
+
 count = 0
 
 def get_img(video, bgr2rgb, d_width=D_WIDTH, d_height=D_HEIGHT):
+    print("get_img start video"+video)
     cap = cv2.VideoCapture("/dev/video" + video)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, d_width)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, d_height)
+    # cap.set(cv2.CAP_PROP_FRAME_WIDTH, d_width)
+    # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, d_height)
     if not cap.isOpened():
         raise SomeException("无法打开摄像头")
-    ret, frame = cap.read()
+    t_r1 = time.time()
+    ret, frame_tmp = cap.read()
+    frame = frame_tmp
+
     print(frame.shape)
+    print("read time:")
+
+    t_r2 = time.time()
+    print(t_r2-t_r1)
+
     if bgr2rgb:
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         filename = "./images/input/" + video + ".jpg"
@@ -76,7 +89,7 @@ def april_tag_detect(video, bgr2rgb, q_distance2wall, q_crooked, q_tag_id):
         q_crooked.put((crooked, theta))
         q_tag_id.put(t_id)
 
-def grab_and_shoot(ctl, s, distance=1000):
+def grab_and_shoot(distance=1000):
     ctl.stay()
     ctl.grab("r")
     while True:
@@ -110,12 +123,22 @@ def main_detect():
 
     print("main_detect start")
 
+    t_1 = time.time()
+
     img_L = get_img(VIDEO_LEFT, VIDEO_LEFT_BGR2RGB)
+
+    t_2 = time.time()
+    print("获取图像用时：")
+    print(t_2 - t_1)
+    t_s1 = time.time()
     if img_L is None:
         print("img_L empty")
     found_L = False
     n_cube_L = False
     have_cube_L, approxes_L = recognition.recognition(img_L) # have_cube 判定视野中是否有橙色部分
+    t_s2 = time.time()
+    print("shibieyongshi:")
+    print(t_s2 - t_s1)
 
     img_R = get_img(VIDEO_RIGHT, VIDEO_RIGHT_BGR2RGB)
     cv2.imwrite("./imtryr.jpg", img_R)
@@ -133,7 +156,7 @@ def main_detect():
         if found_L:
             distance2_L = xy_L[0]**2 + xy_L[1]**2
             if distance2_L <= 400:
-                grab_and_shoot(ctl, s)
+                grab_and_shoot()
             distance2.append((distance2_L, "L"))
         else:
             print("L摄像头只有特殊情况方块")
@@ -144,7 +167,7 @@ def main_detect():
         if found_R:
             distance2_R = xy_R[0]**2 + xy_R[1]**2
             if distance2_R <= 400:
-                grab_and_shoot(ctl, s)
+                grab_and_shoot()
             distance2.append((distance2_R, "R"))
         else:
             print("R摄像头只有特殊情况方块")
@@ -171,124 +194,141 @@ def main_detect():
     print(xy)
     return xy
 
-def main_loop():
-    
-    print("main_loop start")
-    s = Serial()
-    ctl = Controller(s)
-    ctl.hello()
-    print(s.readline())
+class mainThread(threading.Thread):
 
-    while True:
-        
-        # distance2wall = q_distance2wall.get()
-        # crooked = q_crooked.get()
-        # tag_id = q_tag_id.get()
+    def __init__(self, threadID, name):
+        threading.Thread.__init__(self)
+        self.threadID = threadID
+        self.name = name
 
-        # q_distance2wall.put(distance2wall)
-        # q_crooked.put(crooked)
-        # q_tag_id.put(tag_id)
-        # if crooked[0]:
-        #     print("WARNING: 车头不正，需要调整")
+    def run(self):
+        print("Starting " + self.name)
+        print("main_loop start")
+        ctl.hello()
+        print(s.readline())
 
-        xy = main_detect()
+        while True:
 
-        if not xy: # 视野中没有方块
-            # if q_tag_id == -1:
-            global count
-            if count == 0:
-                ctl.move(500, "b")
+            # distance2wall = q_distance2wall.get()
+            # crooked = q_crooked.get()
+            # tag_id = q_tag_id.get()
+
+            # q_distance2wall.put(distance2wall)
+            # q_crooked.put(crooked)
+            # q_tag_id.put(tag_id)
+            # if crooked[0]:
+            #     print("WARNING: 车头不正，需要调整")
+
+            xy = main_detect()
+
+            if not xy:  # 视野中没有方块
+                # if q_tag_id == -1:
+                global count
+                if count == 0:
+                    ctl.move(500, "b")
+                    while True:
+                        if s.readline() == "OK\n":
+                            print("move backward:" + str(1000))
+                            break
+
+                    count = 1
+                else:
+                    ctl.move(500, "f")
+                    while True:
+                        if s.readline() == "OK\n":
+                            print("move foward:" + str(1000))
+                            break
+                    count = 0
+                continue
+
+            if abs(xy[1]) <= 15:
+                ctl.stay()
+            elif xy[1] < 0:  # 往后走
+                ctl.move(int(abs(xy[1])), "b")
                 while True:
                     if s.readline() == "OK\n":
-                        print("move backward:"+str(1000))
+                        print("move backward:" + str(int(abs(xy[1]))))
                         break
-                
-                count = 1
-            else:
-                ctl.move(500, "f")
+                # while abs(xy[1]) > 15:
+                #     xy = main_detect()
+                # ctl.stay()
+                # while True:
+                #     if s.readline() == "OK\n":
+                #         print("stay")
+                #         break
+            else:  # 往前走
+                ctl.move(int(abs(xy[1])), "f")
                 while True:
                     if s.readline() == "OK\n":
-                        print("move foward:"+str(1000))
+                        print("move forward:" + str(int(abs(xy[1]))))
                         break
-                count = 0
-            continue
+                # while abs(xy[1]) > 15:
+                #     xy = main_detect()
+                # ctl.stay()
+                # while True:
+                #     if s.readline() == "OK\n":
+                #         print("stay")
+                #         break
 
-        if abs(xy[1]) <= 15:
-            ctl.stay()
-        elif xy[1] < 0: # 往后走
-            ctl.move(int(abs(xy[1])), "b")
-            while True:
-                if s.readline() == "OK\n":
-                    print("move backward:"+str(int(abs(xy[1]))))
-                    break
-            # while abs(xy[1]) > 15:
-            #     xy = main_detect()
-            # ctl.stay()
-            # while True:
-            #     if s.readline() == "OK\n":
-            #         print("stay")
-            #         break
-        else: # 往前走
-            ctl.move(int(abs(xy[1])), "f")
-            while True:
-                if s.readline() == "OK\n":
-                    print("move forward:"+str(int(abs(xy[1]))))
-                    break
-            # while abs(xy[1]) > 15:
-            #     xy = main_detect()
-            # ctl.stay()
-            # while True:
-            #     if s.readline() == "OK\n":
-            #         print("stay")
-            #         break
-
-        if abs(xy[0]) <= 15:
-            ctl.stay()
-            while True:
-                if s.readline() == "OK\n":
-                    print("stay")
-                    break
-        elif xy[0] < 0: # 往左走
-            ctl.move(int(abs(xy[0])), "l")
-            while True:
-                if s.readline() == "OK\n":
-                    print("move left:"+str(int(abs(xy[0]))))
-                    break
-            # while abs(xy[0]) > 15:
-            #     xy = main_detect()
-            # ctl.stay()
-            # while True:
-            #     if s.readline() == "OK\n":
-            #         print("stay")
-            #         break
-        else: # 往右走
-            ctl.move(int(abs(xy[0])), "r")
-            while True:
-                if s.readline() == "OK\n":
-                    print("move right:"+str(int(abs(xy[0]))))
-                    break
-            # while abs(xy[0]) > 15:
-            #     xy = main_detect()
-            # ctl.stay()
-            # while True:
-            #     if s.readline() == "OK\n":
-            #         print("stay")
-            #         break
+            if abs(xy[0]) <= 15:
+                ctl.stay()
+                while True:
+                    if s.readline() == "OK\n":
+                        print("stay")
+                        break
+            elif xy[0] < 0:  # 往左走
+                ctl.move(int(abs(xy[0])), "l")
+                while True:
+                    if s.readline() == "OK\n":
+                        print("move left:" + str(int(abs(xy[0]))))
+                        break
+                # while abs(xy[0]) > 15:
+                #     xy = main_detect()
+                # ctl.stay()
+                # while True:
+                #     if s.readline() == "OK\n":
+                #         print("stay")
+                #         break
+            else:  # 往右走
+                ctl.move(int(abs(xy[0])), "r")
+                while True:
+                    if s.readline() == "OK\n":
+                        print("move right:" + str(int(abs(xy[0]))))
+                        break
+                # while abs(xy[0]) > 15:
+                #     xy = main_detect()
+                # ctl.stay()
+                # while True:
+                #     if s.readline() == "OK\n":
+                #         print("stay")
+                #         break
+        print("Exiting " + self.name)
 
 if __name__ == "__main__":
 
-    # q_distance2wall = queue.Queue()
-    # q_crooked = queue.Queue()
-    # q_tag_id = queue.Queue()
-    # thread1 = threading.Thread(target=main_loop, args=(q_distance2wall, q_crooked, q_tag_id))
-    # thread2 = threading.Thread(target=april_tag_detect, args=(VIDEO_FRONT, VIDEO_FRONT_BGR2RGB, q_distance2wall, q_crooked, q_tag_id))
+    # # Create a globally accessible controller
+    # s = Serial()
+    # ctl = controller(s)
+    #
+    # # q_distance2wall = queue.Queue()
+    # # q_crooked = queue.Queue()
+    # # q_tag_id = queue.Queue()
+    # # thread1 = threading.Thread(target=main_loop, args=(q_distance2wall, q_crooked, q_tag_id))
+    # # thread2 = threading.Thread(target=april_tag_detect, args=(VIDEO_FRONT, VIDEO_FRONT_BGR2RGB, q_distance2wall, q_crooked, q_tag_id))
+    #
+    # thread1 = mainThread(1, "Thread-1")
+    #
+    # thread1.start()
+    # # thread2.start()
+    #
+    # # thread2.join()
+    # thread1.join()
+    #
+    # print("it's all over")
 
-    thread1 = threading.Thread(target=main_loop)
-
-    thread1.start()
-    # thread2.start()
-
-    # thread2.join()
-    thread1.join()
-
-    print("it's all over")
+    t_start = time.time()
+    xy = main_detect()
+    print(xy)
+    t_over = time.time()
+    print("最终时间：")
+    print(t_over-t_start)
