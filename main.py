@@ -14,9 +14,9 @@ from at_detect import *
 
 VIDEO_LEFT = "20"
 VIDEO_LEFT_BGR2RGB = False
-VIDEO_RIGHT = "24"
+VIDEO_RIGHT = "22"
 VIDEO_RIGHT_BGR2RGB = False
-VIDEO_FRONT = "22"
+VIDEO_FRONT = "11"
 VIDEO_FRONT_BGR2RGB = True
 
 D_HEIGHT = 1080
@@ -32,7 +32,7 @@ def get_img(video, bgr2rgb, d_width=D_WIDTH, d_height=D_HEIGHT):
     # cap.set(cv2.CAP_PROP_FRAME_WIDTH, d_width)
     # cap.set(cv2.CAP_PROP_FRAME_HEIGHT, d_height)
     if not cap.isOpened():
-        raise SomeException("无法打开摄像头")
+        raise Exception("无法打开摄像头")
     t_r1 = time.time()
     ret, frame_tmp = cap.read()
     frame = frame_tmp
@@ -55,7 +55,7 @@ def get_img(video, bgr2rgb, d_width=D_WIDTH, d_height=D_HEIGHT):
         cv2.imwrite(filename, frame)
         print(f"保存图像: {filename}") # time_waste around 3ms
     else:
-        raise SomeException("无法读取视频流")
+        raise Exception("无法读取视频流")
     '''
     cap.release()
     return frame
