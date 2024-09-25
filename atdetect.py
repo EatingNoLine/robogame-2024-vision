@@ -18,7 +18,7 @@ def calculate_distance(p1, p2):
     distance = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
     return distance
 
-class At_detect:
+class AtDetect:
     def __init__(self):
         self.detector = apriltag.Detector(apriltag.DetectorOptions(families='tag36h11'))
 
@@ -117,7 +117,7 @@ class At_detect:
 
 if __name__ == "__main__":
     t1 = time.time()
-    detect = At_detect()
+    detect = AtDetect()
     img = cv2.imread("./images/atag/newat7.jpg")
     t_id, at_num, distance2cam, crooked, theta = detect.detect(img)
     print("t_id:"+str(t_id))
