@@ -19,7 +19,6 @@ def recognition(img):
 
     contours, _ = cv2.findContours(mask, cv2.RETR_CCOMP, cv2.CHAIN_APPROX_SIMPLE)
 
-
     if contours == None:
         return have_cube, approxes
 
@@ -27,6 +26,9 @@ def recognition(img):
         for contour in contours:
             if 10000 < cv2.contourArea(contour) < 350000:
                 filtered_contours.append(contour)
+
+        # cv2.drawContours(img, filtered_contours, -1, (0, 255, 0), 2)
+        # cv2.imwrite("img.jpg", img)
 
         if len(filtered_contours) == 0:
             return have_cube, approxes
@@ -66,8 +68,8 @@ def recognition(img):
                             approx[j] = approx[j + 1]
                             approx[j + 1] = temp
 
-                # cv2.imshow("img", img)
-                # cv2.waitKey(0)
-                # approx ： (i, 1, 3)数组
+            # cv2.imwrite("img.jpg", img)
+            # cv2.waitKey(0)
+            # approx ： (i, 1, 3)数组
 
             return have_cube, approxes

@@ -122,7 +122,7 @@ def analyze(box_list):
         [center_x, center_y] = [box_list[max_index][0], box_list[max_index][1]]
         return [center_x, center_y]
     else:
-        raise SomeException("Error: area_list is empty")
+        raise Exception("Error: area_list is empty")
         max_area = None
 
 

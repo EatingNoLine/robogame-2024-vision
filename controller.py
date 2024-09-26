@@ -1,6 +1,8 @@
 from USBcommunicate import Serial
 from pynput import keyboard
 
+RETURNED_MESSAGE = "OK\n"
+
 class Controller:
     def __init__(self, serial):
         self.serial = serial
@@ -10,37 +12,53 @@ class Controller:
 
     def stay(self):
         self.serial.writeline("000000")
+        while True:
+            if self.serial.readline() == RETURNED_MESSAGE:
+                print("Successfully issued the command " + "stay" + " and received the returned information")
+                break
 
     def grab(self, arm_dir):
         if not isinstance(arm_dir, str):
             arm_dir = str(arm_dir)
         self.serial.writeline("6" + arm_dir + "0000")
+        while True:
+            if self.serial.readline() == RETURNED_MESSAGE:
+                print("Successfully issued the command " + "grab" + " and received the returned information")
+                break
 
     def move(self, distance, direction, gear=0): #gear:挡位 distance(mm)
         match distance:
-            case d if 0 < d <= 200:
+            case d if 0 < d <= 150:
                 gear = 1
-            case d if 200 < d <= 800:
+            case d if 150 < d <= 60:
                 gear = 2
-            case d if 800 < d <= 1200:
+            case d if 600 < d <= 1800:
                 gear = 3
-            case d if 1200 < d <= 1800:
+            case d if 1800 < d <= 2500:
                 gear = 4
-            case d if 1800 < d <= 4000:
+            case d if 2500 < d <= 4000:
                 gear = 5
             case _:
-                raise SomeException("Wrong distance for moving")
+                raise Exception("Wrong distance for moving")
         line = str(gear) + direction + str(distance).zfill(4)
         self.serial.writeline(line)
+        while True:
+            if self.serial.readline() == RETURNED_MESSAGE:
+                print("Successfully issued the command " + "move " + line + " and received the returned information")
+                break
 
     def rotate(self):
-        raise SomeException("未完成的代码")
+        raise Exception("未完成的代码")
 
     def shoot(self):
         self.serial.writeline("8" + "00000")
+        while True:
+            if self.serial.readline() == RETURNED_MESSAGE:
+                print("Successfully issued the command " + "shoot" + " and received the returned information")
+                break
 
     def readline(self):
-        print(self.serial.readline())
+        return self.serial.readline()
 
 # def ctl_on_press(ctl):
 #     def on_press(key):

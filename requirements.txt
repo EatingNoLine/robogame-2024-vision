@@ -37,3 +37,7 @@ tzdata==2024.1
 ultralytics==8.2.95
 ultralytics-thop==2.0.6
 urllib3==2.2.3
+
+apriltag~=0.0.16
+pynput~=1.7.7
+pyserial~=3.5

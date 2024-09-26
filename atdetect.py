@@ -5,7 +5,7 @@ import math
 import time
 
 CAMERA_HEIGHT = 50
-TOLERABLE_DEGREE = 8
+TOLERABLE_DEGREE = 10
 TAG_LENGTH = 400
 TAG_SPACING = 240
 DOWN_SIDE_HEIGHT = 100
@@ -30,14 +30,14 @@ class AtDetect:
             corners = []
             midpoint_to_mid = []
             tag_mp_x = [0,0,0,0,0,0]
-            tag_cp = [[],[],[],[],[],[]]
+            tag_cornerpoints = [[],[],[],[],[],[]]
             at_num = 0
             if tags:
                 for tag in tags:
                     at_num = at_num + 1
                     # print("tag_id: " + str(tag.tag_id))
                     # print(tag.corners)
-                    tag_cp[tag.tag_id].append(tag.corners.tolist())
+                    tag_cornerpoints[tag.tag_id].append(tag.corners.tolist())
                     midpoint = np.mean(tag.corners, axis=0)
                     # print(midpoint)
                     tag_mp_x[tag.tag_id] = midpoint[0]
@@ -64,14 +64,14 @@ class AtDetect:
                 p4 = 1
 
             # 测距
-            diagonal_width = np.linalg.norm(np.array(tag_cp[min_id][0][p1]) - np.array(tag_cp[min_id][0][p4]))
+            diagonal_width = np.linalg.norm(np.array(tag_cornerpoints[min_id][0][p1]) - np.array(tag_cornerpoints[min_id][0][p4]))
             distance2center = (TAG_LENGTH * FOCAL_LENGTH) / diagonal_width
             distance2cam = math.sqrt(distance2center ** 2 - min_dis_to_mid ** 2)
 
             # 判断是否正向墙壁
-            side_len = tag_cp[min_id][0][p3][1] - tag_cp[min_id][0][p1][1]
+            side_len = tag_cornerpoints[min_id][0][p3][1] - tag_cornerpoints[min_id][0][p1][1]
             print("side_len:"+str(side_len))
-            upper_len = calculate_distance(tag_cp[min_id][0][p1], tag_cp[min_id][0][p2])
+            upper_len = calculate_distance(tag_cornerpoints[min_id][0][p1], tag_cornerpoints[min_id][0][p2])
             print("upper_len:"+str(upper_len))
             if upper_len >= side_len:
                 upper_len = side_len
