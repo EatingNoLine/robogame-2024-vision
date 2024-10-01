@@ -2,11 +2,7 @@
 
 ### In this Repo :
 
-#### Old version of traditional CV processor
-
-- **demo.py**
-
-#### New version of nn processor
+#### New version of processor
 
 - **main.py**
 - **new.pt (the trained nn model from yolov8-seg)**
