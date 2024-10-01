@@ -9,6 +9,8 @@ serial format:
 first 0:stay 1:move(slow+) 2:move(slow) 3:move(medium) 4:move(fast) 5:move(fast+) 6:grab 7:rotate 8:shoot
 if move:
     f:foward b:backward l:left r:right
+    # time gear: 100 200 300 500 1000 2000 ()ms
+    #             1   2   3   a    b    c
     later comes "...." e.g. 0012 (mm)
 elif grab:
 	l:left r:right

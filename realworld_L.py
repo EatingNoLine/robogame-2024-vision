@@ -52,50 +52,52 @@ def center(approxes):
 
         if approx.shape[0] > 8:
             n_cube = True
-            # continue
 
-        # else:
-        points = np.zeros((5, 2))
-        for i in range(5):
-            points[i, 0] = calculate(approx[i, 0, 0], approx[i, 0, 1])[0]
-            points[i, 1] = calculate(approx[i, 0, 0], approx[i, 0, 1])[1]
+        if 9 > approx.shape[0] > 4:
+            points = np.zeros((5, 2))
+            for i in range(5):
+                points[i, 0] = calculate(approx[i, 0, 0], approx[i, 0, 1])[0]
+                points[i, 1] = calculate(approx[i, 0, 0], approx[i, 0, 1])[1]
 
-        num1 = [0, 1, 2, 3, 4]
-        combos1 = combinations(num1, 3)
+            num1 = [0, 1, 2, 3, 4]
+            combos1 = combinations(num1, 3)
 
-        # 5个点中取任意3个/遍历
+            # 5个点中取任意3个/遍历
 
-        for combo1 in combos1:
+            for combo1 in combos1:
 
-            d = [(0,0), (0, 0), (0, 0)]
+                d = [(0,0), (0, 0), (0, 0)]
 
-            d[0] = (distance(points[combo1[0]], points[combo1[1]]), 0)
-            d[1] = (distance(points[combo1[0]], points[combo1[2]]), 1)
-            d[2] = (distance(points[combo1[1]], points[combo1[2]]), 2)
+                d[0] = (distance(points[combo1[0]], points[combo1[1]]), 0)
+                d[1] = (distance(points[combo1[0]], points[combo1[2]]), 1)
+                d[2] = (distance(points[combo1[1]], points[combo1[2]]), 2)
 
-            for i in range(3):
-                for j in range(3 - i - 1):
-                    if d[j] < d[j + 1]:
-                        temp = d[j]
-                        d[j] = d[j + 1]
-                        d[j + 1] = temp
-
-
-            if (d[0][0] - 142.93) ** 2 < 600 and (d[1][0] - 101.08) ** 2 < 600 and (d[2][0] - 101.08) ** 2 < 600:
+                for i in range(3):
+                    for j in range(3 - i - 1):
+                        if d[j] < d[j + 1]:
+                            temp = d[j]
+                            d[j] = d[j + 1]
+                            d[j + 1] = temp
 
 
-                found = True
+                if (d[0][0] - 142.93) ** 2 < 600 and (d[1][0] - 101.08) ** 2 < 600 and (d[2][0] - 101.08) ** 2 < 600:
 
-                if d[0][1] == 0:
-                    center_point = ((points[combo1[0], 0] + points[combo1[1], 0])/2, (points[combo1[0], 1] + points[combo1[1], 1])/2)
-                elif d[0][1] == 1:
-                    center_point = ((points[combo1[0], 0] + points[combo1[2], 0])/2, (points[combo1[0], 1] + points[combo1[2], 1])/2)
-                elif d[0][1] == 2:
-                    center_point = ((points[combo1[1], 0] + points[combo1[2], 0])/2, (points[combo1[1], 1] + points[combo1[2], 1])/2)
 
-                center_points.append(center_point)
+                    found = True
 
-                break
+                    if d[0][1] == 0:
+                        center_point = ((points[combo1[0], 0] + points[combo1[1], 0])/2, (points[combo1[0], 1] + points[combo1[1], 1])/2)
+                    elif d[0][1] == 1:
+                        center_point = ((points[combo1[0], 0] + points[combo1[2], 0])/2, (points[combo1[0], 1] + points[combo1[2], 1])/2)
+                    elif d[0][1] == 2:
+                        center_point = ((points[combo1[1], 0] + points[combo1[2], 0])/2, (points[combo1[1], 1] + points[combo1[2], 1])/2)
+
+                    center_points.append(center_point)
+
+                    break
+        if approx.shape[0] < 5:
+            found = True
+            center_points.append((approx[0][0][0], approx[0][0][1]))
 
     if found:
         min_d_center_point = center_points[0]

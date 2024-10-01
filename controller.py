@@ -1,6 +1,8 @@
 from USBcommunicate import Serial
 from pynput import keyboard
+import time
 
+SLEEP_TIME = 0.3
 RETURNED_MESSAGE = "OK\n"
 
 class Controller:
@@ -25,27 +27,30 @@ class Controller:
             if self.serial.readline() == RETURNED_MESSAGE:
                 print("Successfully issued the command " + "grab" + " and received the returned information")
                 break
+        time.sleep(SLEEP_TIME)
 
     def move(self, distance, direction, gear=0): #gear:挡位 distance(mm)
         match distance:
-            case d if 0 < d <= 150:
+            case d if 0 < d <= 500:
                 gear = 1
-            case d if 150 < d <= 60:
+            case d if 500 < d <= 1200:
                 gear = 2
-            case d if 600 < d <= 1800:
+            case d if 1200 < d <= 2500:
                 gear = 3
-            case d if 1800 < d <= 2500:
+            case d if 2500 < d <= 3000:
                 gear = 4
-            case d if 2500 < d <= 4000:
+            case d if 3000 < d <= 4000:
                 gear = 5
             case _:
-                raise Exception("Wrong distance for moving")
-        line = str(gear) + direction + str(distance).zfill(4)
+                raise Exception("Wrong distance for moving: " + str(d))
+
+        line = str(gear) + direction +  + str(distance).zfill(4)
         self.serial.writeline(line)
         while True:
             if self.serial.readline() == RETURNED_MESSAGE:
                 print("Successfully issued the command " + "move " + line + " and received the returned information")
                 break
+        time.sleep(SLEEP_TIME)
 
     def rotate(self):
         raise Exception("未完成的代码")
@@ -56,6 +61,7 @@ class Controller:
             if self.serial.readline() == RETURNED_MESSAGE:
                 print("Successfully issued the command " + "shoot" + " and received the returned information")
                 break
+        time.sleep(SLEEP_TIME)
 
     def readline(self):
         return self.serial.readline()
