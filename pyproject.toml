@@ -1,0 +1,72 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robogame-vision"
+version = "1.0.0"
+description = "Computer-vision stack for the 24Robo 2024 arena robot (AprilTag localisation + orange-cube grasping)"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "EatingNoLine" }]
+keywords = ["robotics", "computer-vision", "apriltag", "opencv", "robocup", "yolov8"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
+dependencies = [
+    "numpy>=1.24",
+    "opencv-python>=4.8",
+    "pyserial>=3.5",
+]
+
+[project.optional-dependencies]
+# AprilTag detection needs the native `apriltag` package (build tools required).
+apriltag = ["apriltag>=0.0.16"]
+# The abandoned YOLOv8-segmentation path; weights are not distributed with the repo.
+yolo = ["ultralytics>=8.2", "torch>=2.0"]
+dev = ["pytest>=7", "pytest-cov>=4", "ruff>=0.5"]
+# Keyboard tele-operation uses pynput, which needs a display on Linux.
+teleop = ["pynput>=1.7"]
+
+[project.urls]
+Repository = "https://github.com/EatingNoLine/robogame-2024-vision"
+Issues = "https://github.com/EatingNoLine/robogame-2024-vision/issues"
+
+[project.scripts]
+robogame-vision = "robogame_vision.cli:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["native"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["robogame_vision"]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+addopts = "-ra"
+filterwarnings = ["error::DeprecationWarning:robogame_vision.*"]
+
+[tool.coverage.run]
+source = ["robogame_vision"]

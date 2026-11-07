@@ -1,0 +1,12 @@
+# Normalise line endings so the repo stays readable on the robot (Linux)
+# and on the Windows development machines.
+* text=auto eol=lf
+
+*.npy binary
+*.npz binary
+*.pt binary
+*.onnx binary
+*.jpg binary
+*.jpeg binary
+*.png binary
+*.mp4 binary

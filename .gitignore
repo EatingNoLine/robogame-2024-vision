@@ -1,6 +1,40 @@
+# --- Python -----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.pytest_cache/
+pytest-of-*/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+venv/
+.venv*/
+yoloenv/
 
-yoloenv
+# --- Editors / OS -----------------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
 
-__pycache__
-
+# --- Runtime artifacts ------------------------------------------------------
+# Frames, debug renders and recordings produced while the robot is running.
+out/
+recordings/
+*.mp4
 nohup.out
+img.jpg
+imtryr.jpg
+perspective_transformed.jpg
+captured_image.jpg
+cam_*.jpg
+
+# --- Model weights ----------------------------------------------------------
+# Not distributed: the YOLOv8 segmentation weights lived here in the 2024 tree.
+*.pt
+*.onnx
