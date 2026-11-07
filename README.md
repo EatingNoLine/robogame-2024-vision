@@ -12,7 +12,10 @@ This repository is the **cleaned-up, tested version of the code that ran during 
 2024 competition season**. It is archived: it is not being developed further, and the
 hardware-dependent path has not been re-verified since (see [Status](#status)).
 
-![AprilTag detection on the arena wall](docs/images/tag_detection.jpg)
+![All six arena tags detected on the wall](docs/images/tag_detection.jpg)
+
+*The six `tag36h11` markers on the arena wall, detected by
+`robogame_vision.cli detect-tag` on [`examples/arena_tags.jpg`](examples/arena_tags.jpg).*
 
 ## How it works
 
@@ -101,8 +104,37 @@ Run the tests (no camera, no chassis, no `torch`):
 
 ```console
 $ python -m pytest
-114 passed
+114 passed, 1 skipped
 ```
+
+The skipped test needs an AprilTag backend; see below.
+
+### AprilTags (optional)
+
+The detector is an optional dependency. Either backend works, so pick whichever
+installs on your machine - `pupil-apriltags` ships wheels, the original `apriltag`
+package needs a C compiler:
+
+```bash
+pip install pupil-apriltags                       # or: pip install -e ".[apriltag]"
+python -m robogame_vision.cli detect-tag examples/arena_tags.jpg --json
+```
+
+```json
+{
+  "image": "examples/arena_tags.jpg",
+  "backend": "pupil_apriltags",
+  "distance_units": "legacy fitted scale, not mm - see docs/known-issues.md",
+  "tags": [
+    {"id": 0, "distance": 4.5826, "yaw_deg": -31.418, "crooked": true},
+    {"id": 3, "distance": 4.121, "yaw_deg": 12.688, "crooked": true},
+    {"id": 5, "distance": 3.492, "yaw_deg": 0.0, "crooked": false}
+  ]
+}
+```
+
+`--save-vis tag_overlay.jpg` writes the annotated frame shown at the top of this
+README.
 
 ## On the robot
 
@@ -124,6 +156,11 @@ python -m robogame_vision.cli run --dry-run       # cameras only, print the fram
 python -m robogame_vision.cli teleop              # keyboard control (needs the teleop extra)
 python -m robogame_vision.cli preview --devices 20 22
 ```
+
+![Frame from the left camera while searching](docs/images/robot_pov.jpg)
+
+*A frame from one of the side cameras: the gripper is in shot, the floor is in front of
+the robot. The HSV window and the projection are tuned for exactly this view.*
 
 ## Serial protocol
 

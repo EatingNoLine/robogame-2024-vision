@@ -17,6 +17,8 @@ made the old behaviour meaningless - see `docs/known-issues.md`.
 - CLI: `run`, `replay`, `detect-tag`, `teleop`, `preview`, `--version`.
 - 114 tests, none of which need a camera, a chassis board or `torch`; parity tests
   against the 2024 code for projection, segmentation and top-face selection.
+- AprilTag detection accepts either backend: the original `apriltag` package or
+  `pupil-apriltags`, which ships wheels.
 - GitHub Actions CI: `ruff check`, `ruff format --check` and `pytest` on
   Ubuntu/Windows × Python 3.10/3.12.
 - `pyproject.toml` with optional extras `apriltag`, `yolo`, `teleop`, `dev`.

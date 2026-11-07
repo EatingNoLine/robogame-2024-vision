@@ -11,7 +11,9 @@ from robogame_vision.cli import build_parser, main
 
 cv2 = pytest.importorskip("cv2")
 
-HAS_APRILTAG = importlib.util.find_spec("apriltag") is not None
+HAS_APRILTAG = any(
+    importlib.util.find_spec(module) is not None for module in ("apriltag", "pupil_apriltags")
+)
 
 
 def test_parser_requires_a_subcommand() -> None:
@@ -73,10 +75,22 @@ def test_replay_rejects_a_bad_calibration_dir(tmp_path, examples_dir) -> None:
 
 
 @pytest.mark.skipif(
-    HAS_APRILTAG, reason="apriltag installed; the missing-extra path is unreachable"
+    HAS_APRILTAG, reason="a detector backend is installed; the missing-extra path is unreachable"
 )
 def test_detect_tag_reports_the_missing_extra(examples_dir, capsys) -> None:
     code = main(["detect-tag", str(examples_dir / "arena_tags.jpg")])
 
     assert code == 2
     assert "apriltag" in capsys.readouterr().err
+
+
+@pytest.mark.skipif(not HAS_APRILTAG, reason="needs an AprilTag detector backend")
+def test_detect_tag_finds_the_arena_wall(examples_dir, capsys) -> None:
+    """The sample frame shows all six tags of the wall, left to right."""
+    code = main(["detect-tag", str(examples_dir / "arena_tags.jpg"), "--json"])
+
+    assert code == 0
+    report = json.loads(capsys.readouterr().out)
+    assert report["backend"] in {"apriltag", "pupil_apriltags"}
+    assert "not mm" in report["distance_units"]
+    assert sorted(tag["id"] for tag in report["tags"]) == [0, 1, 2, 3, 4, 5]

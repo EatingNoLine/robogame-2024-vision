@@ -38,10 +38,13 @@ and what is still unverified. Parity with the old numeric behaviour is pinned by
 * **Hardware.** No robot was available while this version was prepared. Camera
   capture (`cv2.VideoCapture` against `/dev/video20`), serial transport against the
   STM32 board and the physical grasp/shoot sequence have **not** been re-tested.
-* **AprilTag detection.** The `apriltag` Python package was not installable in the
-  environment used for the refactor, so `detect-tag` was exercised only through its
-  missing-dependency path. The pose maths is covered with synthetic corners, and the
-  overlay in `docs/images/tag_detection.jpg` was produced by the 2024 code.
+* **AprilTag detection.** The original `apriltag` package would not build in the
+  environment used for the refactor, so the wrapper now also accepts
+  `pupil-apriltags`. Detection is verified end to end with that backend on
+  `examples/arena_tags.jpg` (all six wall tags, ids 0-5), and the overlay in
+  `docs/images/tag_detection.jpg` is produced by the refactored code. The
+  swatbotics backend is **not** exercised, and the yaw/distance values it produces
+  remain heuristic (see the "behaviour kept" table).
 * **YOLO path.** Weights are not distributed and the wrapper was tested with a fake
   model only.
 * **Race-day tuning.** The HSV window, area window and the 101.08 / 142.93 mm cube

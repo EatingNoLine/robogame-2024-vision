@@ -48,6 +48,10 @@ def estimate_tag_pose(
 ) -> TagPose:
     """Estimate distance and yaw for one tag from its four ``(u, v)`` corners.
 
+    ``corners`` must be in cyclic order around the tag (either direction, as
+    returned by both supported detectors); indices 1/3 and 0/2 are then opposite
+    corners, which is what the diagonal and edge selections assume.
+
     ``image_size`` is ``(height, width)``, matching ``frame.shape[:2]``.
     """
     config = config or TagConfig()

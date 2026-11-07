@@ -1,10 +1,14 @@
 """AprilTag detection wrapper.
 
-The native ``apriltag`` package is an optional dependency and is imported on
-first use, so the rest of the package works without a C toolchain.  Install it
-with ``pip install 'robogame-vision[apriltag]'``; on systems where it refuses to
-build, ``pupil-apriltags`` provides the same detector under a different module
-name and can be adapted in one place here.
+The detector is an optional dependency and is imported on first use, so the rest
+of the package works without a C toolchain.  Two backends are accepted, because
+the original ``apriltag`` package needs a compiler while ``pupil-apriltags``
+ships wheels and exposes the same ``detect(gray)``/``.tag_id``/``.corners`` API:
+
+    pip install 'robogame-vision[apriltag]'     # swatbotics apriltag
+    pip install pupil-apriltags                 # maintained fork, wheels
+
+``AprilTagDetector.backend`` records which one is in use.
 """
 
 from __future__ import annotations
@@ -16,6 +20,8 @@ import numpy as np
 
 __all__ = ["AprilTagDetector", "TagDetection", "render_detections"]
 
+_BACKENDS = ("apriltag", "pupil_apriltags")
+
 
 @dataclass(frozen=True)
 class TagDetection:
@@ -25,19 +31,32 @@ class TagDetection:
     corners: np.ndarray
 
 
+def _open_detector(families: str) -> tuple[str, object]:
+    """Instantiate whichever AprilTag backend is installed."""
+    try:
+        import apriltag
+    except ImportError:
+        pass
+    else:
+        return "apriltag", apriltag.Detector(apriltag.DetectorOptions(families=families))
+
+    try:
+        from pupil_apriltags import Detector
+    except ImportError as exc:  # pragma: no cover - depends on the environment
+        raise ImportError(
+            "AprilTag support needs a detector backend; install either "
+            "pip install 'robogame-vision[apriltag]' (needs a C compiler) or "
+            "pip install pupil-apriltags (wheels available)"
+        ) from exc
+    return "pupil_apriltags", Detector(families=families)
+
+
 class AprilTagDetector:
     """Detect ``tag36h11`` tags in a BGR frame."""
 
     def __init__(self, families: str = "tag36h11") -> None:
-        try:
-            import apriltag
-        except ImportError as exc:  # pragma: no cover - depends on the environment
-            raise ImportError(
-                "AprilTag support needs the native 'apriltag' package; "
-                "install it with: pip install 'robogame-vision[apriltag]'"
-            ) from exc
         self.families = families
-        self._detector = apriltag.Detector(apriltag.DetectorOptions(families=families))
+        self.backend, self._detector = _open_detector(families)
 
     def detect(self, bgr: np.ndarray) -> list[TagDetection]:
         frame = np.asarray(bgr)

@@ -157,6 +157,8 @@ def cmd_detect_tag(args: argparse.Namespace) -> int:
             json.dumps(
                 {
                     "image": str(args.image),
+                    "backend": detector.backend,
+                    "distance_units": "legacy fitted scale, not mm - see docs/known-issues.md",
                     "tags": [
                         {
                             "id": pose.tag_id,
@@ -178,6 +180,7 @@ def cmd_detect_tag(args: argparse.Namespace) -> int:
                 f"tag {pose.tag_id}: distance={pose.distance:.3f} "
                 f"yaw={pose.yaw_deg:+.2f}deg crooked={pose.crooked}"
             )
+        print("# distance is the legacy fitted value, not millimetres")
     return 0
 
 
